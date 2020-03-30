@@ -1,0 +1,15 @@
+[package]
+name = "corelocation-rs"
+version = "0.1.0"
+authors = ["Niraj Thapaliya <nthapaliya@users.noreply.github.com>"]
+edition = "2018"
+
+[dependencies]
+objc = "0.2"
+
+[build-dependencies]
+cc = "1.0"
+
+[profile.release]
+lto = "yes"
+codegen-units = 1
