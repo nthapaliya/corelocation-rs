@@ -17,20 +17,24 @@ pub struct Location {
 }
 
 impl Location {
-    pub fn get_from_os() -> Option<Self> {
+    unsafe fn from_objc_object(obj: *mut Object) -> Self {
+        Self {
+            latitude: trunc_float(get_float_at_index(obj, 0)),
+            longitude: trunc_float(get_float_at_index(obj, 1)),
+            altitude: get_int_at_index(obj, 2),
+            h_accuracy: get_int_at_index(obj, 3),
+            v_accuracy: get_int_at_index(obj, 4),
+        }
+    }
+
+    pub fn from_os() -> Option<Self> {
         let location: Self;
         let array_len: i64;
 
         unsafe {
             let obj: *mut Object = run();
             array_len = msg_send![obj, count];
-            location = Self {
-                latitude: trunc_float(get_float_at_index(obj, 0)),
-                longitude: trunc_float(get_float_at_index(obj, 1)),
-                altitude: get_int_at_index(obj, 2),
-                h_accuracy: get_int_at_index(obj, 3),
-                v_accuracy: get_int_at_index(obj, 4),
-            }
+            location = Self::from_objc_object(obj)
         }
 
         if array_len == 0 {
