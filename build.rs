@@ -1,6 +1,9 @@
 extern crate cc;
 
 fn main() {
+    // To regenerate bindings, run
+    // bindgen --no-layout-tests external/corelocation.h > src/bindings.rs
+
     cc::Build::new()
         .file("external/corelocation.m")
         .flag("-ObjC")

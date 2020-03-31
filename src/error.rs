@@ -4,7 +4,7 @@ use std::{error, fmt};
 pub enum Error {
     NotEnabled,
     NotReturned,
-    Stale(i64),
+    Stale(i32),
     Unknown,
 }
 

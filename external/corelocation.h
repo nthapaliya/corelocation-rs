@@ -1,16 +1,19 @@
-#import <CoreLocation/CoreLocation.h>
-#import <cocoa/cocoa.h>
+enum STATUS {
+  OK,
+  NOT_ENABLED,
+  NOT_RETURNED,
+  STALE,
+};
 
-@interface LocationDelegate : NSObject
-- (void)locationManager:(CLLocationManager *)manager
-     didUpdateLocations:(NSArray<CLLocation *> *)locations;
-- (void)locationManager:(CLLocationManager *)manager didFailWithError:(NSError *)error;
-@end
+typedef struct LocInfo {
+  double latitude;
+  double longitude;
+  int h_accuracy;
+  int altitude;
+  int v_accuracy;
+  enum STATUS status;
+  int error_duration;
+} LocInfo;
 
-@interface LocationService : NSObject
-- (void)run;
 
-@property double latitude, longitude;
-@property int altitude, horizontalAccuracy, verticalAccuracy;
-@property int errorCode, errorDuration;
-@end
+LocInfo run(void);

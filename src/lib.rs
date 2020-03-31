@@ -1,16 +1,8 @@
-#[macro_use]
-extern crate objc;
-
+mod bindings;
 mod error;
 
+use bindings::LocInfo;
 pub use error::Error;
-use objc::runtime::{Class, Object};
-
-#[link(name = "corelocation")]
-extern "C" {
-    #[link_name = "OBJC_CLASS_$_LocationService"]
-    static SERVICE: Class;
-}
 
 #[derive(Debug)]
 pub struct Location {
@@ -21,45 +13,36 @@ pub struct Location {
     pub v_accuracy: i64,
 }
 
-pub type Result<T> = std::result::Result<T, Error>;
-
-impl Location {
-    unsafe fn from_objc_object(obj: *mut Object) -> Result<Self> {
-        match msg_send!(obj, errorCode) {
-            0 => (),
-            1 => return Err(Error::NotEnabled),
-            2 => return Err(Error::NotReturned),
-            3 => return Err(Error::Stale(msg_send!(obj, errorDuration))),
-            _ => return Err(Error::Unknown),
-        }
-
-        Ok(Self {
-            latitude: trunc_float(msg_send!(obj, latitude)),
-            longitude: trunc_float(msg_send!(obj, longitude)),
-            altitude: msg_send!(obj, altitude),
-            h_accuracy: msg_send!(obj, horizontalAccuracy),
-            v_accuracy: msg_send!(obj, verticalAccuracy),
-        })
-    }
-
-    pub fn from_os() -> Result<Self> {
-        let location: Result<Self>;
-
-        unsafe {
-            #[allow(clippy::deref_addrof)]
-            let obj: *mut Object = msg_send![&SERVICE, new];
-
-            let _: i64 = msg_send![obj, run];
-            location = Self::from_objc_object(obj)
-        }
-
-        location
+impl LocInfo {
+    fn new() -> Self {
+        unsafe { bindings::run() }
     }
 }
 
-fn trunc_float(num: f64) -> f64 {
-    let k = 10_000_000.0;
-    (num * k).trunc() / k
+pub type Result<T> = std::result::Result<T, Error>;
+
+impl Location {
+    pub fn from_os() -> Result<Self> {
+        let l = LocInfo::new();
+
+        match l.status {
+            bindings::STATUS_OK => Ok(Self::from_c_struct(l)),
+            bindings::STATUS_NOT_ENABLED => Err(Error::NotEnabled),
+            bindings::STATUS_NOT_RETURNED => Err(Error::NotReturned),
+            bindings::STATUS_STALE => Err(Error::Stale(l.error_duration)),
+            _ => Err(Error::Unknown),
+        }
+    }
+
+    fn from_c_struct(l: LocInfo) -> Self {
+        Self {
+            latitude: l.latitude,
+            longitude: l.longitude,
+            altitude: l.altitude as i64,
+            h_accuracy: l.h_accuracy as i64,
+            v_accuracy: l.v_accuracy as i64,
+        }
+    }
 }
 
 #[cfg(test)]
