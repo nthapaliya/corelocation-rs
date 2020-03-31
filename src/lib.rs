@@ -1,13 +1,18 @@
 #[macro_use]
 extern crate objc;
 
-use objc::runtime::Object;
+mod error;
+
+pub use error::Error;
+use objc::runtime::{Class, Object};
 
 #[link(name = "corelocation")]
 extern "C" {
-    fn run() -> *mut Object;
+    #[link_name = "OBJC_CLASS_$_LocationService"]
+    static SERVICE: Class;
 }
 
+#[derive(Debug)]
 pub struct Location {
     pub latitude: f64,
     pub longitude: f64,
@@ -16,32 +21,39 @@ pub struct Location {
     pub v_accuracy: i64,
 }
 
+pub type Result<T> = std::result::Result<T, Error>;
+
 impl Location {
-    unsafe fn from_objc_object(obj: *mut Object) -> Self {
-        Self {
-            latitude: trunc_float(get_float_at_index(obj, 0)),
-            longitude: trunc_float(get_float_at_index(obj, 1)),
-            altitude: get_int_at_index(obj, 2),
-            h_accuracy: get_int_at_index(obj, 3),
-            v_accuracy: get_int_at_index(obj, 4),
+    unsafe fn from_objc_object(obj: *mut Object) -> Result<Self> {
+        match msg_send!(obj, errorCode) {
+            0 => (),
+            1 => return Err(Error::NotEnabled),
+            2 => return Err(Error::NotReturned),
+            3 => return Err(Error::Stale(msg_send!(obj, errorDuration))),
+            _ => return Err(Error::Unknown),
         }
+
+        Ok(Self {
+            latitude: trunc_float(msg_send!(obj, latitude)),
+            longitude: trunc_float(msg_send!(obj, longitude)),
+            altitude: msg_send!(obj, altitude),
+            h_accuracy: msg_send!(obj, horizontalAccuracy),
+            v_accuracy: msg_send!(obj, verticalAccuracy),
+        })
     }
 
-    pub fn from_os() -> Option<Self> {
-        let location: Self;
-        let array_len: i64;
+    pub fn from_os() -> Result<Self> {
+        let location: Result<Self>;
 
         unsafe {
-            let obj: *mut Object = run();
-            array_len = msg_send![obj, count];
+            #[allow(clippy::deref_addrof)]
+            let obj: *mut Object = msg_send![&SERVICE, new];
+
+            let _: i64 = msg_send![obj, run];
             location = Self::from_objc_object(obj)
         }
 
-        if array_len == 0 {
-            return None;
-        }
-
-        Some(location)
+        location
     }
 }
 
@@ -50,20 +62,14 @@ fn trunc_float(num: f64) -> f64 {
     (num * k).trunc() / k
 }
 
-unsafe fn get_float_at_index(nsarray: *mut Object, index: i64) -> f64 {
-    let x: *mut Object = msg_send![nsarray, objectAtIndex: index];
-    msg_send![x, doubleValue]
-}
-
-unsafe fn get_int_at_index(nsarray: *mut Object, index: i64) -> i64 {
-    let x: *mut Object = msg_send![nsarray, objectAtIndex: index];
-    msg_send![x, integerValue]
-}
-
 #[cfg(test)]
 mod tests {
+    use super::*;
+
     #[test]
     fn test_location() {
-        // TODO
+        let location = Location::from_os();
+        println!("{:#?}", location);
+        panic!();
     }
 }

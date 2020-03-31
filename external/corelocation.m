@@ -1,11 +1,4 @@
-#import <CoreLocation/CoreLocation.h>
-#import <cocoa/cocoa.h>
-
-@interface LocationDelegate : NSObject
-- (void)locationManager:(CLLocationManager *)manager
-     didUpdateLocations:(NSArray<CLLocation *> *)locations;
-- (void)locationManager:(CLLocationManager *)manager didFailWithError:(NSError *)error;
-@end
+#include "corelocation.h"
 
 @implementation LocationDelegate: NSObject
 - (void)locationManager:(CLLocationManager *)manager
@@ -27,11 +20,12 @@
 }
 @end
 
-
-NSArray* run()
+@implementation LocationService
+- (void)run
 {
   if (![CLLocationManager locationServicesEnabled]) {
-    return nil;
+    self.errorCode = 1;
+    return;
   }
 
   id delegate = [[LocationDelegate alloc] init];
@@ -45,27 +39,26 @@ NSArray* run()
 
   NSTimeInterval interval = [[loc timestamp] timeIntervalSinceNow];
 
-  if (0 != @(interval).intValue) {
-    NSLog(@"Error condition: timestamp is %f seconds old", -1.0 * interval);
-    // Continue for now
+  double duration = -1 * @(interval).intValue;
+
+  if (0 != duration) {
+    self.errorCode = 3;
+    self.errorDuration = duration;
   }
 
   // Simple heuristic for Error condition
   if (loc.horizontalAccuracy == 0.0 && loc.verticalAccuracy == 0.0) {
-    return nil;
+    self.errorCode = 2;
+    return;
   }
 
   [locationManager release];
   [delegate release];
 
-  NSArray *result = [NSArray arrayWithObjects:
-    [NSNumber numberWithDouble: loc.coordinate.latitude],
-    [NSNumber numberWithDouble: loc.coordinate.longitude],
-    [NSNumber numberWithDouble: loc.altitude],
-    [NSNumber numberWithDouble: loc.horizontalAccuracy],
-    [NSNumber numberWithDouble: loc.verticalAccuracy],
-    nil
-  ];
-
-  return result;
+  self.latitude = loc.coordinate.latitude;
+  self.longitude =  loc.coordinate.longitude;
+  self.altitude = loc.altitude;
+  self.horizontalAccuracy = loc.horizontalAccuracy;
+  self.verticalAccuracy = loc.verticalAccuracy;
 }
+@end
