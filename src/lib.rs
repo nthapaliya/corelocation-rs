@@ -29,7 +29,13 @@ impl Location {
             bindings::STATUS_OK => Ok(Self::from_c_struct(l)),
             bindings::STATUS_NOT_ENABLED => Err(Error::NotEnabled),
             bindings::STATUS_NOT_RETURNED => Err(Error::NotReturned),
-            bindings::STATUS_STALE => Err(Error::Stale(l.error_duration)),
+            bindings::STATUS_STALE => {
+                if l.error_duration > 100 {
+                    Err(Error::Stale(l.error_duration))
+                } else {
+                    Ok(Self::from_c_struct(l))
+                }
+            }
             _ => Err(Error::Unknown),
         }
     }
