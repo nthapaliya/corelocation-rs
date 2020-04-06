@@ -64,10 +64,8 @@ LocInfo run(void) {
   [locationManager release];
   [delegate release];
 
-  double k = 10000000.0;
-
-  l.latitude = ((int)(k * loc.coordinate.latitude)) / k;
-  l.longitude =  ((int)(k * loc.coordinate.longitude)) / k;
+  l.latitude = loc.coordinate.latitude;
+  l.longitude =  loc.coordinate.longitude;
   l.altitude = loc.altitude;
   l.h_accuracy = loc.horizontalAccuracy;
   l.v_accuracy = loc.verticalAccuracy;

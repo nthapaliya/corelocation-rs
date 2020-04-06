@@ -8,9 +8,9 @@ enum STATUS {
 typedef struct LocInfo {
   double latitude;
   double longitude;
-  int h_accuracy;
-  int altitude;
-  int v_accuracy;
+  double h_accuracy;
+  double altitude;
+  double v_accuracy;
   enum STATUS status;
   int error_duration;
 } LocInfo;

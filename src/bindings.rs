@@ -10,9 +10,9 @@ pub type STATUS = u32;
 pub struct LocInfo {
     pub latitude: f64,
     pub longitude: f64,
-    pub h_accuracy: ::std::os::raw::c_int,
-    pub altitude: ::std::os::raw::c_int,
-    pub v_accuracy: ::std::os::raw::c_int,
+    pub h_accuracy: f64,
+    pub altitude: f64,
+    pub v_accuracy: f64,
     pub status: STATUS,
     pub error_duration: ::std::os::raw::c_int,
 }
