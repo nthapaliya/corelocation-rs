@@ -25,15 +25,14 @@ const ACCURACY: [f64; 9] = [
 ];
 
 fn trim_to_precision(n: f64, accuracy: f64) -> f64 {
-    for (i, v) in ACCURACY.iter().enumerate() {
-        if accuracy > *v {
+    match ACCURACY.iter().position(|v| accuracy > *v) {
+        Some(i) => {
             let base: f64 = 10.0;
             let k = base.powf(i as f64);
-            return (k * n).trunc() / k;
+            (k * n).trunc() / k
         }
+        None => n,
     }
-
-    n
 }
 
 #[derive(Debug)]
@@ -95,7 +94,7 @@ mod tests {
     }
 
     #[test]
-    fn test_truncate() {
+    fn test_trim_to_precision() {
         let longitude: f64 = -74.189_714_162_760;
         let h_accuracy: f64 = 65.0;
 
