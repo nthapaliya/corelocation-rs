@@ -4,6 +4,9 @@ version = "0.1.0"
 authors = ["Niraj Thapaliya <nthapaliya@users.noreply.github.com>"]
 edition = "2018"
 
+[dependencies]
+rand = "0.7.3"
+
 [build-dependencies]
 cc = "1.0"
 

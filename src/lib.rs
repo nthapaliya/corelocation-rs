@@ -96,6 +96,45 @@ impl Location {
     }
 }
 
+pub mod mock {
+    use super::*;
+    use rand::{thread_rng, Rng};
+
+    pub struct Random;
+
+    impl Locator for Random {
+        fn from_os(&self) -> Result<Location> {
+            let mut rng = thread_rng();
+
+            let l = LocInfo {
+                latitude: rng.gen_range(-90.0, 90.0),
+                longitude: rng.gen_range(-180.0, 180.0),
+                h_accuracy: rng.gen_range(50.0, 100.0),
+                altitude: rng.gen_range(0.0, 8848.0),
+                v_accuracy: rng.gen_range(0.0, 25.0),
+                error_duration: 0,
+                status: 0,
+            };
+
+            Ok(Location::from_c_struct(l))
+        }
+    }
+
+    pub struct Fixed;
+
+    impl Locator for Fixed {
+        fn from_os(&self) -> Result<Location> {
+            Ok(Location {
+                latitude: -79.1234,
+                longitude: 12.1234,
+                h_accuracy: 10,
+                altitude: 718,
+                v_accuracy: 10,
+            })
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
