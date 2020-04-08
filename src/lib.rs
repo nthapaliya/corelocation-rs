@@ -149,8 +149,11 @@ mod tests {
     #[test]
     fn test_trim_to_precision() {
         let longitude: f64 = -74.189_714_162_760;
-        let h_accuracy: f64 = 65.0;
-
-        assert_eq!(trim_to_precision(longitude, h_accuracy), -74.1897);
+        assert_eq!(trim_to_precision(longitude, 1.0), -74.189_714);
+        assert_eq!(trim_to_precision(longitude, 10.0), -74.18971);
+        assert_eq!(trim_to_precision(longitude, 100.0), -74.1897);
+        assert_eq!(trim_to_precision(longitude, 1000.0), -74.189);
+        assert_eq!(trim_to_precision(longitude, 10000.0), -74.18);
+        assert_eq!(trim_to_precision(longitude, 100_000.0), -74.1);
     }
 }
