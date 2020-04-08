@@ -35,7 +35,7 @@ fn trim_to_precision(n: f64, accuracy: f64) -> f64 {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Location {
     pub latitude: f64,
     pub longitude: f64,
@@ -52,7 +52,21 @@ impl LocInfo {
 
 pub type Result<T> = std::result::Result<T, Error>;
 
+pub trait Locator {
+    fn from_os(&self) -> Result<Location>;
+}
+
+impl Locator for Location {
+    fn from_os(&self) -> Result<Location> {
+        Location::from_os()
+    }
+}
+
 impl Location {
+    pub fn new() -> Self {
+        Default::default()
+    }
+
     pub fn from_os() -> Result<Self> {
         let l = LocInfo::new();
 
