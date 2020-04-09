@@ -35,7 +35,7 @@ fn trim_to_precision(n: f64, accuracy: f64) -> f64 {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct Location {
     pub latitude: f64,
     pub longitude: f64,
@@ -50,24 +50,20 @@ impl LocInfo {
     }
 }
 
-pub type Result<T> = std::result::Result<T, Error>;
+pub type LocationResult = std::result::Result<Location, Error>;
 
 pub trait Locator {
-    fn from_os(&self) -> Result<Location>;
+    fn get() -> LocationResult;
 }
 
 impl Locator for Location {
-    fn from_os(&self) -> Result<Location> {
+    fn get() -> LocationResult {
         Location::from_os()
     }
 }
 
 impl Location {
-    pub fn new() -> Self {
-        Default::default()
-    }
-
-    pub fn from_os() -> Result<Self> {
+    fn from_os() -> LocationResult {
         let l = LocInfo::new();
 
         match l.status {
@@ -103,7 +99,7 @@ pub mod mock {
     pub struct Random;
 
     impl Locator for Random {
-        fn from_os(&self) -> Result<Location> {
+        fn get() -> LocationResult {
             let mut rng = thread_rng();
 
             let l = LocInfo {
@@ -123,7 +119,7 @@ pub mod mock {
     pub struct Fixed;
 
     impl Locator for Fixed {
-        fn from_os(&self) -> Result<Location> {
+        fn get() -> LocationResult {
             Ok(Location {
                 latitude: -79.1234,
                 longitude: 12.1234,

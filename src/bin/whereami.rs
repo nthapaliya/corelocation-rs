@@ -1,9 +1,9 @@
 extern crate corelocation_rs;
 
-use corelocation_rs::Location;
+use corelocation_rs::{Location, Locator};
 
 fn main() {
-    let location = Location::from_os();
+    let location = Location::get();
 
     if let Err(e) = location {
         println!("{}", e);
