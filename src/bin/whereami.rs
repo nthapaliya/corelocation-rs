@@ -6,7 +6,12 @@ fn main() {
     let location = Location::get();
 
     if let Err(e) = location {
-        println!("{}", e);
+        println!(
+            r#"{{
+  "error": "{}"
+}}"#,
+            e
+        );
         std::process::exit(1);
     }
 
@@ -17,8 +22,8 @@ fn main() {
   "latitude": {},
   "longitude": {},
   "altitude": {},
-  "vertical_accuracy": {},
-  "horizontal_accuracy": {}
+  "v_accuracy": {},
+  "h_accuracy": {}
 }}"#,
         location.latitude,
         location.longitude,
